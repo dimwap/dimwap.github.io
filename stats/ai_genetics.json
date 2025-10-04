@@ -6,8 +6,8 @@
     "interests": ["нейросети", "философия", "музыка"]
   },
   "metrics": {
-    "generated_images": 0,
-    "total_sessions": 0,
+    "generated_images": 11,
+    "total_sessions": 23,
     "last_update": "2025-10-05T14:00:00Z"
   },
   "source": "dimwap.github.io",
