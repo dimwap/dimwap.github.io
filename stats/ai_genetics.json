@@ -1,0 +1,13 @@
+// stats/ai_genetics.json
+{
+  "user_id": "178f83c2c95740dda011459cd6180b9f",
+  "profile": {
+    "name": "Александр",
+    "role": "разработчик ИИ"
+  },
+  "metrics": {
+    "generated_images": 84,
+    "total_dialogs": 23,
+    "last_update": "2025-10-05T13:15:00Z"
+  }
+}
