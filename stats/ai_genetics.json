@@ -1,13 +1,15 @@
-// stats/ai_genetics.json
 {
   "user_id": "178f83c2c95740dda011459cd6180b9f",
   "profile": {
     "name": "Александр",
-    "role": "разработчик ИИ"
+    "role": "разработчик ИИ",
+    "interests": ["нейросети", "философия", "музыка"]
   },
   "metrics": {
-    "generated_images": 84,
-    "total_dialogs": 23,
-    "last_update": "2025-10-05T13:15:00Z"
-  }
+    "generated_images": 0,
+    "total_sessions": 0,
+    "last_update": "2025-10-05T14:00:00Z"
+  },
+  "source": "dimwap.github.io",
+  "pulse": "tupitochka@hulypulse"
 }
