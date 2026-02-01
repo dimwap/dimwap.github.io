@@ -2,55 +2,79 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>GitHub Chat Fix</title>
+    <title>GitHub REST Chat</title>
     <style>
-        body { font-family: sans-serif; max-width: 500px; margin: 20px auto; }
-        #messages { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
-        .msg { margin-bottom: 8px; border-bottom: 1px solid #eee; }
+        body { font-family: sans-serif; max-width: 400px; margin: 20px auto; padding: 10px; }
+        #box { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background: #fdfdfd; border-radius: 5px; }
+        .msg { margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-size: 14px; }
+        input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <div id="messages"></div>
-    <input type="text" id="nameInput" placeholder="Имя" style="width: 20%;">
-    <input type="text" id="messageInput" placeholder="Сообщение..." style="width: 60%;">
-    <button id="sendBtn">ОК</button>
-
-    <!-- Подключаем старым надежным способом через глобальные переменные -->
-    <script src="https://www.gstatic.com"></script>
-    <script src="https://www.gstatic.com"></script>
+    <h3>Чат (через .json эндпоинт)</h3>
+    <div id="box">Загрузка...</div>
+    <div style="display: flex; gap: 5px;">
+        <input id="n" placeholder="Имя" style="width: 70px;">
+        <input id="m" placeholder="Текст сообщения..." style="flex-grow: 1;">
+        <button onclick="send()">ОК</button>
+    </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
-            databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com",
-            projectId: "gitchat-2b675",
-            appId: "1:1021059658961:web:e455940894ca49673481f0"
-        };
+        // ВАЖНО: .json в конце обязателен для работы без SDK
+        const apiUrl = "https://gitchat-2b675-default-rtdb.firebaseio.com";
 
-        // Инициализация (v8 стиль)
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const chatRef = db.ref("messages");
-
-        // Чтение
-        chatRef.on("child_added", (snapshot) => {
-            const data = snapshot.val();
-            const div = document.createElement("div");
-            div.className = "msg";
-            div.innerHTML = `<b>${data.name}:</b> ${data.text}`;
-            document.getElementById("messages").appendChild(div);
-            document.getElementById("messages").scrollTop = 9999;
-        });
-
-        // Отправка
-        document.getElementById("sendBtn").onclick = function() {
-            const name = document.getElementById("nameInput").value || "Аноним";
-            const text = document.getElementById("messageInput").value;
-            if (text) {
-                chatRef.push({ name: name, text: text, time: Date.now() });
-                document.getElementById("messageInput").value = "";
+        async function load() {
+            try {
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+                const box = document.getElementById("box");
+                
+                if (data) {
+                    box.innerHTML = "";
+                    // Превращаем объект в список и сортируем, если нужно
+                    Object.keys(data).forEach(id => {
+                        const div = document.createElement("div");
+                        div.className = "msg";
+                        div.innerHTML = `<b>${data[id].name || "Аноним"}:</b> ${data[id].text}`;
+                        box.appendChild(div);
+                    });
+                    box.scrollTop = box.scrollHeight;
+                } else {
+                    box.innerHTML = "Сообщений пока нет...";
+                }
+            } catch (e) {
+                console.error("Ошибка чтения:", e);
             }
-        };
+        }
+
+        async function send() {
+            const nameInput = document.getElementById("n");
+            const msgInput = document.getElementById("m");
+            const text = msgInput.value.trim();
+            
+            if (!text) return;
+
+            try {
+                // POST запрос тоже должен идти на .json адрес
+                await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: nameInput.value || "Аноним",
+                        text: text,
+                        ts: Date.now()
+                    })
+                });
+                msgInput.value = "";
+                load(); // Мгновенно обновляем после отправки
+            } catch (e) {
+                alert("Не удалось отправить сообщение");
+            }
+        }
+
+        // Обновляем раз в 3 секунды
+        setInterval(load, 3000);
+        load();
     </script>
 </body>
 </html>
