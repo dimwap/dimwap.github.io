@@ -22,43 +22,58 @@
     if (typeof firebase !== 'undefined') {
         var config = {
             apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
-            authDomain: "gitchat-2b675.firebaseapp.com", // Добавили это
+            authDomain: "gitchat-2b675.firebaseapp.com",
             databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com",
             projectId: "gitchat-2b675"
         };
         
-        firebase.initializeApp(config);
-        var db = firebase.database().ref("messages");
+        // Инициализация
+        if (!firebase.apps.length) {
+            firebase.initializeApp(config);
+        }
+        
+        var database = firebase.database();
+        var chatRef = database.ref("messages");
 
-        db.on("child_added", function(snap) {
+        // Чтение
+        chatRef.on("child_added", function(snap) {
             var box = document.getElementById("box");
-            if(box.innerHTML == "Загрузка...") box.innerHTML = "";
+            if(box.innerHTML === "Загрузка...") box.innerHTML = "";
             var d = snap.val();
             var el = document.createElement("div");
+            el.style.padding = "5px";
             el.innerHTML = "<b>" + (d.name || "Аноним") + ":</b> " + d.text;
             box.appendChild(el);
-            box.scrollTop = 9999;
+            box.scrollTop = box.scrollHeight;
         });
 
+        // Отправка (переписана для стабильности)
         document.getElementById("b").onclick = function() {
-            var m = document.getElementById("m");
-            var n = document.getElementById("n");
-            if (m.value.trim()) {
-                // Используем .set() или .push()
-                db.push({
-                    name: n.value || "Аноним",
-                    text: m.value,
-                    ts: Date.now()
-                }).catch(function(error) {
-                    console.error("Ошибка Firebase:", error);
-                    alert("Ошибка базы: " + error.message);
+            var msgInput = document.getElementById("m");
+            var nameInput = document.getElementById("n");
+            var messageText = msgInput.value.trim();
+            
+            if (messageText) {
+                // Создаем новый пустой дочерний узел
+                var newPostRef = chatRef.push();
+                // Записываем в него данные
+                newPostRef.set({
+                    name: nameInput.value || "Аноним",
+                    text: messageText,
+                    time: firebase.database.ServerValue.TIMESTAMP
+                }, function(error) {
+                    if (error) {
+                        alert("Ошибка записи: " + error.message);
+                    } else {
+                        msgInput.value = ""; // Очистка при успехе
+                    }
                 });
-                m.value = "";
             }
         };
     } else {
-        document.getElementById("box").innerHTML = "Библиотеки не загружены!";
+        document.getElementById("box").innerHTML = "Критическая ошибка: библиотеки не загружены!";
     }
 </script>
+
 </body>
 </html>
