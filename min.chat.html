@@ -2,26 +2,28 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <script src="https://code.jquery.com"></script>
 </head>
 <body>
-    <div id="out">Проверка связи...</div>
+    <div id="out">Проверка REST API...</div>
 
     <script>
-        // Читаем напрямую через REST API (просто GET запрос)
-        function readTest() {
+        async function readData() {
+            // Firebase отдает данные как обычный JSON файл по этой ссылке
             const url = "https://gitchat-2b675-default-rtdb.firebaseio.com";
             
-            $.get(url, function(data) {
-                document.getElementById("out").innerHTML = "Данные через REST: " + data;
-                console.log("Победа:", data);
-            }).fail(function(err) {
-                document.getElementById("out").innerHTML = "Ошибка: " + err.statusText;
-            });
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                document.getElementById("out").innerHTML = "Успех! Значение test = " + data;
+                console.log("Данные получены:", data);
+            } catch (err) {
+                document.getElementById("out").innerHTML = "Ошибка запроса: " + err.message;
+                console.error(err);
+            }
         }
 
-        // Запуск через 1 секунду после загрузки
-        setTimeout(readTest, 1000);
+        readData();
     </script>
 </body>
 </html>
