@@ -1,64 +1,33 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <title>GitHub Chat Fix</title>
-    <style>
-        body { font-family: sans-serif; max-width: 400px; margin: 20px auto; }
-        #box { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
-    </style>
-</head>
 <body>
-    <div id="box">Загрузка...</div>
-    <input id="n" placeholder="Имя" style="width: 50px;">
-    <input id="m" placeholder="Текст" style="width: 200px;">
-    <button id="b">ОК</button>
+    <div id="out">Ожидание данных...</div>
 
-    <!-- Подключаем как -->
-    
     <script type="module">
-    // Используем современный импорт, который не боится "заморозки" объектов
-    import { initializeApp } from "https://www.gstatic.com";
-    import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com";
+        // Используем CDN esm.sh — он не вызывает ошибок 404/CORS на GitHub
+        import { initializeApp } from "https://esm.sh";
+        import { getDatabase, ref, onValue } from "https://esm.sh";
 
-    const config = {
-        apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
-        databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com",
-        projectId: "gitchat-2b675"
-    };
+        const config = {
+            databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com"
+        };
 
-    const app = initializeApp(config);
-    const db = getDatabase(app);
-    const chatRef = ref(db, "messages");
+        try {
+            const app = initializeApp(config);
+            const db = getDatabase(app);
+            const testRef = ref(db, 'test');
 
-    const box = document.getElementById("box");
-    const mInput = document.getElementById("m");
-    const nInput = document.getElementById("n");
-
-    // Чтение
-    onChildAdded(chatRef, (snap) => {
-        if (box.innerHTML === "Загрузка...") box.innerHTML = "";
-        const data = snap.val();
-        const div = document.createElement("div");
-        div.innerHTML = `<b>${data.name || "Аноним"}:</b> ${data.text}`;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-    });
-
-    // Отправка
-    document.getElementById("b").onclick = () => {
-        if (mInput.value.trim()) {
-            push(chatRef, {
-                name: nInput.value || "Аноним",
-                text: mInput.value,
-                time: serverTimestamp()
-            }).then(() => {
-                mInput.value = "";
-            }).catch(err => alert("Ошибка Firebase: " + err.message));
+            // Читаем значение один раз
+            onValue(testRef, (snapshot) => {
+                const data = snapshot.val();
+                document.getElementById("out").innerHTML = "Данные из базы: " + data;
+                console.log("Успех! Получено:", data);
+            }, (error) => {
+                document.getElementById("out").innerHTML = "Ошибка базы: " + error.message;
+            });
+        } catch (e) {
+            document.getElementById("out").innerHTML = "Ошибка скрипта: " + e.message;
         }
-    };
-</script>
-
-
+    </script>
 </body>
 </html>
