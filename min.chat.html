@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>GitHub Chat Fix</title>
+    <style>
+        body { font-family: sans-serif; max-width: 400px; margin: 20px auto; }
+        #box { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div id="box">Загрузка...</div>
+    <input id="n" placeholder="Имя" style="width: 50px;">
+    <input id="m" placeholder="Текст" style="width: 200px;">
+    <button id="b">ОК</button>
+
+    <!-- Подключаем как обычные скрипты, НЕ модули -->
+    <script src="firebase-app.min.js"></script>
+    <script src="firebase-database.min.js"></script>
+
+    <script>
+        // Проверяем, что библиотеки v8 загрузились
+        if (typeof firebase !== 'undefined') {
+            var config = {
+                apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
+                databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com",
+                projectId: "gitchat-2b675"
+            };
+            
+            firebase.initializeApp(config);
+            var db = firebase.database().ref("messages");
+
+            // Слушаем новые сообщения
+            db.on("child_added", function(snap) {
+                if(document.getElementById("box").innerHTML == "Загрузка...") {
+                    document.getElementById("box").innerHTML = "";
+                }
+                var data = snap.val();
+                var div = document.createElement("div");
+                div.innerHTML = "<b>" + (data.name || "Аноним") + ":</b> " + data.text;
+                document.getElementById("box").appendChild(div);
+                document.getElementById("box").scrollTop = 9999;
+            });
+
+            // Кнопка отправить
+            document.getElementById("b").onclick = function() {
+                var m = document.getElementById("m");
+                var n = document.getElementById("n");
+                if (m.value) {
+                    db.push({
+                        name: n.value || "Аноним",
+                        text: m.value
+                    });
+                    m.value = "";
+                }
+            };
+        } else {
+            document.getElementById("box").innerHTML = "Ошибка: Файлы библиотек не найдены!";
+        }
+    </script>
+</body>
+</html>
