@@ -14,66 +14,51 @@
     <input id="m" placeholder="Текст" style="width: 200px;">
     <button id="b">ОК</button>
 
-    <!-- Подключаем как обычные скрипты, НЕ модули -->
-    <script src="firebase-app.min.js"></script>
-    <script src="firebase-database.min.js"></script>
+    <!-- Подключаем как -->
+    
+    <script type="module">
+    // Используем современный импорт, который не боится "заморозки" объектов
+    import { initializeApp } from "https://www.gstatic.com";
+    import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com";
 
-    <script>
-    if (typeof firebase !== 'undefined') {
-        var config = {
-            apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
-            authDomain: "gitchat-2b675.firebaseapp.com",
-            databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com",
-            projectId: "gitchat-2b675"
-        };
-        
-        // Инициализация
-        if (!firebase.apps.length) {
-            firebase.initializeApp(config);
+    const config = {
+        apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
+        databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com",
+        projectId: "gitchat-2b675"
+    };
+
+    const app = initializeApp(config);
+    const db = getDatabase(app);
+    const chatRef = ref(db, "messages");
+
+    const box = document.getElementById("box");
+    const mInput = document.getElementById("m");
+    const nInput = document.getElementById("n");
+
+    // Чтение
+    onChildAdded(chatRef, (snap) => {
+        if (box.innerHTML === "Загрузка...") box.innerHTML = "";
+        const data = snap.val();
+        const div = document.createElement("div");
+        div.innerHTML = `<b>${data.name || "Аноним"}:</b> ${data.text}`;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    });
+
+    // Отправка
+    document.getElementById("b").onclick = () => {
+        if (mInput.value.trim()) {
+            push(chatRef, {
+                name: nInput.value || "Аноним",
+                text: mInput.value,
+                time: serverTimestamp()
+            }).then(() => {
+                mInput.value = "";
+            }).catch(err => alert("Ошибка Firebase: " + err.message));
         }
-        
-        var database = firebase.database();
-        var chatRef = database.ref("messages");
-
-        // Чтение
-        chatRef.on("child_added", function(snap) {
-            var box = document.getElementById("box");
-            if(box.innerHTML === "Загрузка...") box.innerHTML = "";
-            var d = snap.val();
-            var el = document.createElement("div");
-            el.style.padding = "5px";
-            el.innerHTML = "<b>" + (d.name || "Аноним") + ":</b> " + d.text;
-            box.appendChild(el);
-            box.scrollTop = box.scrollHeight;
-        });
-
-        // Отправка (переписана для стабильности)
-        document.getElementById("b").onclick = function() {
-            var msgInput = document.getElementById("m");
-            var nameInput = document.getElementById("n");
-            var messageText = msgInput.value.trim();
-            
-            if (messageText) {
-                // Создаем новый пустой дочерний узел
-                var newPostRef = chatRef.push();
-                // Записываем в него данные
-                newPostRef.set({
-                    name: nameInput.value || "Аноним",
-                    text: messageText,
-                    time: firebase.database.ServerValue.TIMESTAMP
-                }, function(error) {
-                    if (error) {
-                        alert("Ошибка записи: " + error.message);
-                    } else {
-                        msgInput.value = ""; // Очистка при успехе
-                    }
-                });
-            }
-        };
-    } else {
-        document.getElementById("box").innerHTML = "Критическая ошибка: библиотеки не загружены!";
-    }
+    };
 </script>
+
 
 </body>
 </html>
