@@ -1,33 +1,27 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com"></script>
+</head>
 <body>
-    <div id="out">Ожидание данных...</div>
+    <div id="out">Проверка связи...</div>
 
-    <script type="module">
-        // Используем CDN esm.sh — он не вызывает ошибок 404/CORS на GitHub
-        import { initializeApp } from "https://esm.sh";
-        import { getDatabase, ref, onValue } from "https://esm.sh";
-
-        const config = {
-            databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com"
-        };
-
-        try {
-            const app = initializeApp(config);
-            const db = getDatabase(app);
-            const testRef = ref(db, 'test');
-
-            // Читаем значение один раз
-            onValue(testRef, (snapshot) => {
-                const data = snapshot.val();
-                document.getElementById("out").innerHTML = "Данные из базы: " + data;
-                console.log("Успех! Получено:", data);
-            }, (error) => {
-                document.getElementById("out").innerHTML = "Ошибка базы: " + error.message;
+    <script>
+        // Читаем напрямую через REST API (просто GET запрос)
+        function readTest() {
+            const url = "https://gitchat-2b675-default-rtdb.firebaseio.com";
+            
+            $.get(url, function(data) {
+                document.getElementById("out").innerHTML = "Данные через REST: " + data;
+                console.log("Победа:", data);
+            }).fail(function(err) {
+                document.getElementById("out").innerHTML = "Ошибка: " + err.statusText;
             });
-        } catch (e) {
-            document.getElementById("out").innerHTML = "Ошибка скрипта: " + e.message;
         }
+
+        // Запуск через 1 секунду после загрузки
+        setTimeout(readTest, 1000);
     </script>
 </body>
 </html>
