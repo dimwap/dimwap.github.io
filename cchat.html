@@ -14,42 +14,45 @@
     <input type="text" id="m" placeholder="Текст" style="width: 200px;">
     <button id="b">ОК</button>
 
-    <!-- ИСПОЛЬЗУЕМ КЛАССИЧЕСКИЕ СКРИПТЫ БЕЗ МОДУЛЕЙ -->
-    <script src="https://www.gstatic.com"></script>
-    <script src="https://www.gstatic.com"></script>
+   <!-- Используем cdnjs (Cloudflare) вместо gstatic -->
+<script src="https://cdnjs.cloudflare.com"></script>
+<script src="https://cdnjs.cloudflare.com"></script>
 
-    <script>
-        // Конфиг без лишних полей
-        var config = {
-            apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
-            databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com",
-            projectId: "gitchat-2b675"
-        };
+<script>
+    var config = {
+        apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
+        databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com",
+        projectId: "gitchat-2b675"
+    };
 
-        // Инициализация v8 (старая, но самая надежная для простых страниц)
+    // Инициализация
+    if (typeof firebase !== 'undefined') {
         firebase.initializeApp(config);
         var db = firebase.database().ref("messages");
 
-        // Чтение
+        // Слушаем сообщения
         db.on("child_added", function(snap) {
             var data = snap.val();
             var div = document.createElement("div");
+            div.style.borderBottom = "1px solid #eee";
             div.innerHTML = "<b>" + (data.name || "Аноним") + ":</b> " + data.text;
             document.getElementById("box").appendChild(div);
             document.getElementById("box").scrollTop = 9999;
         });
 
-        // Отправка
+        // Кнопка отправить
         document.getElementById("b").onclick = function() {
-            var text = document.getElementById("m").value;
-            if (text) {
-                db.push({
-                    name: document.getElementById("n").value,
-                    text: text
-                });
-                document.getElementById("m").value = "";
+            var m = document.getElementById("m");
+            var n = document.getElementById("n");
+            if (m.value) {
+                db.push({ name: n.value || "Аноним", text: m.value });
+                m.value = "";
             }
         };
-    </script>
+    } else {
+        document.body.innerHTML = "<h1>Ошибка: Библиотеки не загружены. Проверьте сеть.</h1>";
+    }
+</script>
+
 </body>
 </html>
