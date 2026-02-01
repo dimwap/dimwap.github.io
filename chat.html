@@ -2,78 +2,91 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>GitHub REST Chat</title>
+    <title>Экономная Гостевая</title>
     <style>
-        body { font-family: sans-serif; max-width: 400px; margin: 20px auto; padding: 10px; }
-        #box { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background: #fdfdfd; border-radius: 5px; }
-        .msg { margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-size: 14px; }
-        input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 10px; }
+        #box { height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background: #fff; }
+        .msg { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .time { color: #999; font-size: 0.8em; }
+        .err { color: red; font-size: 0.9em; }
     </style>
 </head>
 <body>
-    <h3>Чат (через .json эндпоинт)</h3>
-    <div id="box">Загрузка...</div>
+    <h3>Гостевая книга (Traffic Safe)</h3>
+    <div id="box">Загрузка последних сообщений...</div>
+    
     <div style="display: flex; gap: 5px;">
-        <input id="n" placeholder="Имя" style="width: 70px;">
-        <input id="m" placeholder="Текст сообщения..." style="flex-grow: 1;">
+        <input id="n" placeholder="Имя" style="width: 80px;">
+        <input id="m" placeholder="Сообщение (до 500 симв.)" style="flex-grow: 1;">
         <button onclick="send()">ОК</button>
     </div>
 
     <script>
-        // ВАЖНО: .json в конце обязателен для работы без SDK
-        const apiUrl = "https://gitchat-2b675-default-rtdb.firebaseio.com/test.json";
+        const base = "https://gitchat-2b675-default-rtdb.firebaseio.com/test.json";
+        let lastTs = 0; 
+        let isFirstLoad = true;
 
         async function load() {
+            // Если первая загрузка - берем последние 10. Если нет - только те, что новее lastTs
+            let query = isFirstLoad 
+                ? `?orderBy="ts"&limitToLast=10` 
+                : `?orderBy="ts"&startAt=${lastTs + 1}`;
+            
             try {
-                const res = await fetch(apiUrl);
+                const res = await fetch(base + query);
                 const data = await res.json();
                 const box = document.getElementById("box");
-                
-                if (data) {
-                    box.innerHTML = "";
-                    // Превращаем объект в список и сортируем, если нужно
-                    Object.keys(data).forEach(id => {
+
+                if (data && Object.keys(data).length > 0) {
+                    if (isFirstLoad) { box.innerHTML = ""; isFirstLoad = false; }
+
+                    // Сортируем ключи по времени, так как Firebase в JSON может выдать их вразнобой
+                    const sortedIds = Object.keys(data).sort((a, b) => data[a].ts - data[b].ts);
+                    
+                    sortedIds.forEach(id => {
+                        const d = data[id];
+                        if (d.ts <= lastTs) return; // Пропускаем дубликаты
+
                         const div = document.createElement("div");
                         div.className = "msg";
-                        div.innerHTML = `<b>${data[id].name || "Аноним"}:</b> ${data[id].text}`;
+                        const time = new Date(d.ts).toLocaleTimeString();
+                        div.innerHTML = `<span class="time">${time}</span> <b>${escape(d.name)}:</b> ${escape(d.text)}`;
                         box.appendChild(div);
+                        
+                        lastTs = d.ts; // Запоминаем время последнего сообщения
                     });
+                    
                     box.scrollTop = box.scrollHeight;
-                } else {
-                    box.innerHTML = "Сообщений пока нет...";
+                } else if (isFirstLoad) {
+                    box.innerHTML = "Сообщений пока нет.";
+                    isFirstLoad = false;
                 }
-            } catch (e) {
-                console.error("Ошибка чтения:", e);
-            }
+            } catch (e) { console.error("Ошибка загрузки"); }
         }
 
         async function send() {
-            const nameInput = document.getElementById("n");
-            const msgInput = document.getElementById("m");
-            const text = msgInput.value.trim();
-            
-            if (!text) return;
+            let name = (document.getElementById("n").value || "Аноним").substring(0, 20);
+            let text = document.getElementById("m").value;
+
+            if (!text.trim()) return;
+            if (text.length > 500) { alert("Слишком длинно!"); text = text.substring(0, 500); }
 
             try {
-                // POST запрос тоже должен идти на .json адрес
-                await fetch(apiUrl, {
+                const res = await fetch(base, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: nameInput.value || "Аноним",
-                        text: text,
-                        ts: Date.now()
-                    })
+                    body: JSON.stringify({ name, text, ts: Date.now() })
                 });
-                msgInput.value = "";
-                load(); // Мгновенно обновляем после отправки
-            } catch (e) {
-                alert("Не удалось отправить сообщение");
-            }
+                if (!res.ok) throw new Error();
+                document.getElementById("m").value = "";
+                load();
+            } catch (e) { alert("Ошибка записи. Проверьте Rules!"); }
         }
 
-        // Обновляем раз в 3 секунды
-        setInterval(load, 3000);
+        function escape(str) {
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        setInterval(load, 5000); // Проверка обновлений раз в 5 сек
         load();
     </script>
 </body>
