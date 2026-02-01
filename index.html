@@ -19,51 +19,55 @@
     <input type="text" id="messageInput" placeholder="Сообщение..." style="width: 250px;">
     <button id="sendBtn">Отправить</button>
 
-    <script type="module">
-        // Импортируем нужные функции из SDK v12
-        import { initializeApp } from "https://www.gstatic.com";
-        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com";
+   <script type="module">
+    // Исправленные ссылки: теперь ведут на конкретные JS-файлы
+    import { initializeApp } from "https://www.gstatic.com";
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com";
 
-        // Ваши конфиги
-        const firebaseConfig = {
-            apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
-            authDomain: "gitchat-2b675.firebaseapp.com",
-            databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com",
-            projectId: "gitchat-2b675",
-            appId: "1:1021059658961:web:e455940894ca49673481f0"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
+        authDomain: "gitchat-2b675.firebaseapp.com",
+        databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com",
+        projectId: "gitchat-2b675",
+        storageBucket: "gitchat-2b675.firebasestorage.app",
+        messagingSenderId: "1021059658961",
+        appId: "1:1021059658961:web:e455940894ca49673481f0",
+        measurementId: "G-9ZVBGRNEYG"
+    };
 
-        // Инициализация
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const chatRef = ref(db, "messages");
+    // Инициализация
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const chatRef = ref(db, "messages");
 
-        const msgContainer = document.getElementById("messages");
-        const nameInp = document.getElementById("nameInput");
-        const msgInp = document.getElementById("messageInput");
-        const btn = document.getElementById("sendBtn");
+    const msgContainer = document.getElementById("messages");
+    const nameInp = document.getElementById("nameInput");
+    const msgInp = document.getElementById("messageInput");
+    const btn = document.getElementById("sendBtn");
 
-        // Слушаем базу на новые сообщения
-        onChildAdded(chatRef, (snapshot) => {
-            const data = snapshot.val();
-            const div = document.createElement("div");
-            div.className = "msg";
-            div.innerHTML = `<b>${data.name}</b>: ${data.text}`;
-            msgContainer.appendChild(div);
-            msgContainer.scrollTop = msgContainer.scrollHeight;
-        });
+    // Слушаем базу
+    onChildAdded(chatRef, (snapshot) => {
+        const data = snapshot.val();
+        const div = document.createElement("div");
+        div.className = "msg";
+        div.innerHTML = `<b>${data.name}</b>: ${data.text}`;
+        msgContainer.appendChild(div);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+    });
 
-        // Отправка сообщения
-        btn.onclick = () => {
-            if (msgInp.value.trim() !== "") {
-                push(chatRef, {
-                    name: nameInp.value || "Аноним",
-                    text: msgInp.value,
-                    timestamp: Date.now()
-                });
-                msgInp.value = "";
-            }
-        };
-    </script>
+    // Отправка
+    btn.onclick = () => {
+        const text = msgInp.value.trim();
+        if (text !== "") {
+            push(chatRef, {
+                name: nameInp.value || "Аноним",
+                text: text,
+                timestamp: Date.now()
+            }).catch(err => alert("Ошибка записи! Проверьте Rules в Firebase: " + err.message));
+            msgInp.value = "";
+        }
+    };
+</script>
+
 </body>
 </html>
