@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Fixed Local Chat</title>
+</head>
+<body>
+    <div id="box" style="height:300px; overflow:auto; border:1px solid #ccc;">Загрузка...</div>
+    <input id="n" placeholder="Имя" style="width:50px">
+    <input id="m" placeholder="Сообщение" style="width:200px">
+    <button id="b">ОК</button>
+
+    <!-- Загружаем ваши локальные файлы v8 -->
+    <script src="firebase-app.js"></script>
+    <script src="firebase-db.js"></script>
+
+    <script>
+        // Простая проверка загрузки
+        if (typeof firebase !== 'undefined') {
+            var config = {
+                apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
+                databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com",
+                projectId: "gitchat-2b675"
+            };
+            firebase.initializeApp(config);
+            var db = firebase.database().ref("messages");
+
+            db.on("child_added", function(s) {
+                if(document.getElementById("box").innerHTML == "Загрузка...") document.getElementById("box").innerHTML = "";
+                var d = s.val();
+                var el = document.createElement("div");
+                el.innerHTML = "<b>" + (d.name||"Аноним") + ":</b> " + d.text;
+                document.getElementById("box").appendChild(el);
+            });
+
+            document.getElementById("b").onclick = function() {
+                var m = document.getElementById("m");
+                if (m.value) {
+                    db.push({ name: document.getElementById("n").value, text: m.value });
+                    m.value = "";
+                }
+            };
+        } else {
+            document.getElementById("box").innerHTML = "Ошибка: Файлы .js не загружены или повреждены.";
+        }
+    </script>
+</body>
+</html>
