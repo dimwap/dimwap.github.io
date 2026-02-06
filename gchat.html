@@ -73,37 +73,38 @@ const firebaseConfig = {
     let userName = "Аноним";
     let lastTs = 0;
     let isFirstLoad = true;
-
-    // Следим за авторизацией (подхватит токен после логина)
-    //firebase.auth().onAuthStateChanged(async (user) => {
-    //    if (user) {
-    //        userToken = await user.getIdToken();
-    //        userName = user.displayName || user.email.split('@')[0];
-    //        document.getElementById("auth-container").innerHTML = `<b>${userName}</b>`;
-    //    }
-    //});
-    <!-- Обновлённый блок авторизации -->
+    let isSignedOut = false; // Флаг выхода, обход проблемки
+   
+    //<!-- Обновлённый блок авторизации -->
     firebase.auth().onAuthStateChanged(async (user) => {
         const authContainer = document.getElementById("auth-container");
+        const messageInput = document.getElementById("m");
+        const sendButton = document.querySelector("button[onclick='send()']");
+    
         if (user) {
+            isSignedOut = false; // Сбрасываем флаг при входе
             userToken = await user.getIdToken();
             userName = user.displayName || user.email.split('@')[0];
             
-            // Ссылка для выхода
             authContainer.innerHTML = `
-                <a href="#" onclick="firebase.auth().signOut(); return false;" 
+                <a href="#" onclick="handleSignOut()" 
                    style="text-decoration: none; color: inherit; cursor: pointer;"
                    title="Кликните для выхода">
                     ${escape(userName)}
                 </a>
             `;
+            
+            messageInput.disabled = false;
+            sendButton.disabled = false;
         } else {
-            // Кнопка для входа
             authContainer.innerHTML = `
                 <button onclick="signInWithGitHub()">
                     Вход через GitHub
                 </button>
             `;
+            
+            messageInput.disabled = true;
+            sendButton.disabled = true;
         }
     });
 
@@ -157,12 +158,21 @@ const firebaseConfig = {
             }
         } catch (e) { console.error("Network error"); }
     }
-
+// Обработчик выхода
+function handleSignOut() {
+    firebase.auth().signOut().then(() => {
+        isSignedOut = true;
+        document.getElementById("m").disabled = true;
+        document.querySelector("button").disabled = true;
+    });
+    return false; // Отменяем действие ссылки
+}
+// Отправка в чат (и в базу rtdb) с авторизацией и меткой времени [ts]
     async function send() {
         let text = document.getElementById("m").value;
         if (!text.trim()) return;
         if (!userToken) { alert("Сначала войдите через GitHub!"); return; }
-
+        if (isSignedOut || !firebase.auth().currentUser) {alert('Сессия завершена, обновите страницу'); return; }
         try {
             const res = await fetch(`${base}?auth=${userToken}`, {
                 method: 'POST',
@@ -183,7 +193,7 @@ const firebaseConfig = {
         return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    setInterval(load, 5000);
+    setInterval(load, 7000);
     load();
 </script>
 </body>
