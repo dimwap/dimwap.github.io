@@ -43,7 +43,8 @@ firebase.initializeApp(firebaseConfig);
 
 let userToken = null;
 let userName = "Аноним";
-
+const base = firebaseConfig.databaseURL;
+    
 // Функция входа
 async function login() {
     const provider = new firebase.auth.GithubAuthProvider();
