@@ -75,20 +75,6 @@ const firebaseConfig = {
     let isFirstLoad = true;
     let isSignedOut = false; // Флаг выхода, обход проблемки
 
-    // Функция входа через GitHub
-    function signInWithGitHub() {
-        auth.signInWithPopup(provider)
-            .then((result) => {
-                // Успешный вход
-                const user = result.user;
-                console.log('Успешная авторизация:', user);
-            })
-            .catch((error) => {
-                // Обработка ошибок
-                console.error('Ошибка авторизации:', error);
-                alert('Не удалось войти через GitHub. Проверьте консоль для деталей.');
-            });
-    }
     //<!-- Обновлённый блок авторизации -->
     firebase.auth().onAuthStateChanged(async (user) => {
         const authContainer = document.getElementById("auth-container");
@@ -112,7 +98,7 @@ const firebaseConfig = {
             sendButton.disabled = false;
         } else {
             authContainer.innerHTML = `
-                <button onclick="signInWithGitHub()">
+                <button onclick="login()">
                     Вход через GitHub
                 </button>
             `;
