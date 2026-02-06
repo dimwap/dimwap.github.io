@@ -86,8 +86,8 @@ async function send() {
 //--------- 
 async function load() {
     let query = isFirstLoad 
-        ? `?orderBy="ts"&limitToLast=10` 
-        : `?orderBy="ts"&startAt=${lastTs + 1}`;
+        ? `?orderBy="ts"&limitToLast=10&auth=${userToken}` 
+        : `?orderBy="ts"&startAt=${lastTs + 1}&auth=${userToken}`;
     
     try {
         const res = await fetch(base + query);
