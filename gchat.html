@@ -69,10 +69,7 @@ const firebaseConfig = {
             ? `orderBy="ts"&limitToLast=10` 
             : `orderBy="ts"&startAt=${lastTs + 1}`;
 
-        // Добавляем auth только если токен РЕАЛЬНО есть
-        const url = userToken 
-            ? `${base}?${params}&auth=${userToken}` 
-            : `${base}?${params}`;
+        const url = `${base}?${params}`;
 
         try {
             const res = await fetch(url);
