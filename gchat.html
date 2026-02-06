@@ -1,4 +1,90 @@
-    async function load() {
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Экономная Гостевая</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 10px; }
+        #box { height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background: #fff; }
+        .msg { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .time { color: #999; font-size: 0.8em; }
+        .err { color: red; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+<script src="firebase/8.10.0/firebase-app.js"></script>
+<script src="firebase/8.10.0/firebase-auth.js"></script>
+
+<h3>Гостевая книга v1.0 (Traffic Safe)</h3>
+<div id="box">Загрузка последних сообщений...</div>
+    
+<div style="display: flex; gap: 5px;">
+    <!-- имя или кнопка -->
+    <div id="auth-container">
+        <button onclick="login()">Войти через GitHub</button>
+    </div>
+    <input id="m" placeholder="Сообщение..." style="flex-grow: 1;">
+    <button onclick="send()">ОК</button>
+</div>
+
+<script>
+let lastTs = 0; 
+let isFirstLoad = true;
+
+const firebaseConfig = {
+    projectId: "gitchat-2b675",
+    appId: "1:1021059658961:web:e455940894ca49673481f0",
+    apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
+    authDomain: "gitchat-2b675.firebaseapp.com",
+    databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com/test.json" 
+};
+
+firebase.initializeApp(firebaseConfig);
+
+let userToken = null;
+let userName = "Аноним";
+
+// Функция входа
+async function login() {
+    const provider = new firebase.auth.GithubAuthProvider();
+    try {
+        const result = await firebase.auth().signInWithPopup(provider);
+        userToken = await result.user.getIdToken();
+        userName = result.user.displayName || "gitUser";
+        
+        // Убираем кнопку, показываем имя
+        document.getElementById("auth-container").innerHTML = `<b>${userName}</b>`;
+    } catch (e) {
+        alert("Ошибка входа: " + e.message);
+    }
+}
+
+async function send() {
+    let text = document.getElementById("m").value;
+    if (!text.trim()) return;
+
+    // ВАЖНО: Добавляем ?auth= токен к URL
+    const url = `${base}?auth=${userToken}`; 
+
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify({ 
+                name: userName, // Имя берем из профиля GitHub
+                text, 
+                ts: Date.now() 
+            })
+        });
+        if (!res.ok) throw new Error("Rules rejected");
+        document.getElementById("m").value = "";
+        load();
+    } catch (e) { 
+        alert("Ошибка! Возможно, вы не авторизованы."); 
+    }
+}
+
+//--------- 
+async function load() {
     let query = isFirstLoad 
         ? `?orderBy="ts"&limitToLast=10` 
         : `?orderBy="ts"&startAt=${lastTs + 1}`;
@@ -39,3 +125,12 @@
     } catch (e) { console.error("Сбой сети"); }
 }
 
+        function escape(str) {
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        setInterval(load, 5000); 
+        load();
+    </script>
+</body>
+</html>
