@@ -85,12 +85,23 @@ async function send() {
 
 //--------- 
 async function load() {
-    let query = isFirstLoad 
-        ? `?orderBy="ts"&limitToLast=10&auth=${userToken}` 
-        : `?orderBy="ts"&startAt=${lastTs + 1}&auth=${userToken}`;
+    // 1. Формируем базовые параметры
+    let params = isFirstLoad 
+        ? `orderBy="ts"&limitToLast=10` 
+        : `orderBy="ts"&startAt=${lastTs + 1}`;
+
+    // 2. Добавляем auth ТОЛЬКО если токен существует
+    // Если токен null, мы вообще не пишем этот параметр
+    if (userToken) {
+        params += `&auth=${userToken}`;
+    }
+
+    // 3. Собираем финальный URL (убедитесь, что base — это "https://.../chat.json")
+    const url = `${base}?${params}`;
     
     try {
-        const res = await fetch(base + query);
+        const res = await fetch(url);
+        // ...   const res = await fetch(base + query);
         const data = await res.json();
         const box = document.getElementById("box");
 
