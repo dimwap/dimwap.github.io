@@ -1,7 +1,7 @@
 {
   "user_id": "178f83c2c95740dda011459cd6180b9f",
   "profile": {
-    "name": "Александр",
+    "name": "n/a",
     "role": "разработчик ИИ",
     "interests": ["нейросети", "философия", "музыка"]
   },
@@ -11,5 +11,5 @@
     "last_update": "2025-10-05T14:00:00Z"
   },
   "source": "dimwap.github.io",
-  "pulse": "tupitochka@hulypulse"
+  "pulse": "whoami@hulypulse"
 }
