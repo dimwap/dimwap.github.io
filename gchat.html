@@ -43,7 +43,7 @@
 <body>
 <script src="firebase/8.10.0/firebase-app.js"></script>
 <script src="firebase/8.10.0/firebase-auth.js"></script>
-
+<script src="firebase/8.10.0/firebase-config.js"></script>
 <h3>Гостевая книга v1.1 (Traffic Safe with github Auth)</h3>
 <div id="box">Загрузка последних сообщений...</div>
     
@@ -55,16 +55,8 @@
     <input id="m" placeholder="Сообщение..." style="flex-grow: 1;">
     <button onclick="send()">ОК</button>
 </div>
-
+<!-- Сначала конфиг -->
 <script>
-const firebaseConfig = {
-    projectId: "gitchat-2b675",
-    appId: "1:1021059658961:web:e455940894ca49673481f0",
-    apiKey: "AIzaSyBQ8AVQ1D8c0IpDgoRXL0QayaaVktd3_Xg",
-    authDomain: "gitchat-2b675.firebaseapp.com",
-    databaseURL: "https://gitchat-2b675-default-rtdb.firebaseio.com" 
-    };
-
     // Инициализация
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
