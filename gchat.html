@@ -55,8 +55,11 @@
     <input id="m" placeholder="Сообщение..." style="flex-grow: 1;">
     <button onclick="send()">ОК</button>
 </div>
+    
 <!-- Сначала конфиг -->
 <script>
+//require('dotenv').config();
+//const dbUser = process.env.apiKey;
     // Инициализация
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
@@ -177,7 +180,7 @@ function handleSignOut() {
             if (!res.ok) throw new Error();
             document.getElementById("m").value = "";
             load();
-        } catch (e) { alert("Ошибка записи. Проверьте Rules!"); }
+        } catch (e) { alert("Ошибка записи в бвзу. Проверьте Rules!"); }
     }
 
     function escape(str) {
@@ -185,7 +188,7 @@ function handleSignOut() {
         return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    setInterval(load, 7000);
+    setInterval(load, 12000);
     load();
 </script>
 </body>
