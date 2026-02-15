@@ -61,6 +61,7 @@
 //require('dotenv').config();
 //const dbUser = process.env.apiKey;
     // Инициализация
+    const firebaseConfig = getHeaders();
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
     const base = firebaseConfig.databaseURL + "/test.json";
@@ -69,7 +70,7 @@
     let lastTs = 0;
     let isFirstLoad = true;
     let isSignedOut = false; // Флаг выхода, обход проблемки
-    const firebaseConfig = getHeaders();
+
     //<!-- Обновлённый блок авторизации -->
     firebase.auth().onAuthStateChanged(async (user) => {
         const authContainer = document.getElementById("auth-container");
