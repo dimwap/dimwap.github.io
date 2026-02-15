@@ -43,7 +43,7 @@
 <body>
 <script src="firebase/8.10.0/firebase-app.js"></script>
 <script src="firebase/8.10.0/firebase-auth.js"></script>
-<script src="firebase/8.10.0/firebase-config.js"></script>
+<script src="firebase/8.10.0/config.js"></script>
 <h3>Гостевая книга v1.1 (Traffic Safe with github Auth)</h3>
 <div id="box">Загрузка последних сообщений...</div>
     
@@ -69,7 +69,7 @@
     let lastTs = 0;
     let isFirstLoad = true;
     let isSignedOut = false; // Флаг выхода, обход проблемки
-
+    const firebaseConfig = getHeaders();
     //<!-- Обновлённый блок авторизации -->
     firebase.auth().onAuthStateChanged(async (user) => {
         const authContainer = document.getElementById("auth-container");
