@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Гостевая книга-чат с авторизацией</title>
+    <title>Гостевая книга-чат с авторизацией и голосовым вводом</title>
     <style>
         body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 10px; }
         #box { height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background: #fff; }
@@ -44,7 +44,7 @@
 <script src="firebase/8.10.0/firebase-app.js"></script>
 <script src="firebase/8.10.0/firebase-auth.js"></script>
 <script src="firebase/8.10.0/config.js?v=2"></script>
-<h3>Гостевая книга v1.1 (Traffic Safe with github Auth)</h3>
+<h3>Гостевая книга v1.2 (Traffic Safe +github Auth +mike)</h3>
 <div id="box">Загрузка последних сообщений...</div>
     
 <!--div style="display: flex; gap: 5px;">
@@ -237,11 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 recognition.stop();
             } else {
                 // Очищаем поле перед новой записью? (Опционально) -- это нам не нужно=)
-                // Если хотите дописывать к существующему тексту, закомментируйте следующую строку:
-                //if (inputField.value.trim() === "") { 
-                   // Можно оставить пустым, если хотим заменять только при полной тишине
-                //}
-                
+                //if (inputField.value.trim() === "") { }
                 recognition.start();
             }
         }
@@ -277,7 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Вставляем текст в поле.  А ВОТ ЭТО НУЖНО! =))
             // Если хотите добавлять к уже написанному, используйте: inputField.value += " " + transcript;
-            // Сейчас делаем замену, так как обычно диктуют одну мысль:
             inputField.value += " " + transcript; 
             
             // Эмуляция события input (на случай, если у вас есть слушатели на изменение текста)
