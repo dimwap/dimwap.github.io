@@ -47,15 +47,33 @@
 <h3>Гостевая книга v1.1 (Traffic Safe with github Auth)</h3>
 <div id="box">Загрузка последних сообщений...</div>
     
-<div style="display: flex; gap: 5px;">
-    <!-- имя или кнопка -->
+<!--div style="display: flex; gap: 5px;">
     <div id="auth-container">
         <button onclick="login()">Войти через GitHub</button>
     </div>
     <input id="m" placeholder="Сообщение..." style="flex-grow: 1;">
     <button onclick="send()">ОК</button>
+</div -->
+<div style="display: flex; gap: 5px; align-items: center;">
+    <!-- Блок авторизации -->
+    <div id="auth-container">
+        <button onclick="login()">Вход через GitHub</button>
+    </div>
+
+    <!-- Поле ввода -->
+    <input id="m" placeholder="Сообщение (или голосом🎤)..." style="flex-grow: 1;" disabled>
+
+    <!-- Кнопка голосового ввода (новая) -->
+    <button id="voice-btn" type="button" title="Голосовой ввод" style="display: none; padding: 0 10px; font-size: 1.2em; cursor: pointer;" disabled>
+        🎤
+    </button>
+
+    <!-- Кнопка отправки -->
+    <button id="send-btn" onclick="send()" disabled>ОК</button>
 </div>
-    
+
+<!-- Небольшой индикатор статуса (опционально, исчезает через 2 сек) -->
+<div id="voice-status" style="font-size: 0.8em; color: #666; height: 1.2em; margin-top: 2px;"></div>    
 <!-- Сначала конфиг -->
 <script>
 //require('dotenv').config();
@@ -191,6 +209,117 @@ function handleSignOut() {
 
     setInterval(load, 12000);
     load();
+</script>
+<script> // функцию придумал ИИ, просто вставляю
+document.addEventListener('DOMContentLoaded', () => {
+    const voiceBtn = document.getElementById('voice-btn');
+    const inputField = document.getElementById('m');
+    const statusDiv = document.getElementById('voice-status');
+    const sendBtn = document.getElementById('send-btn');
+
+    // Проверка поддержки API
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+        // Показываем кнопку, если браузер поддерживает
+        voiceBtn.style.display = 'inline-block';
+        
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ru-RU'; // Русский язык
+        recognition.interimResults = false; // Ждем окончания фразы
+        recognition.maxAlternatives = 1;
+
+        let isListening = false;
+
+        // Функция переключения состояния кнопки
+        function toggleListening() {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                // Очищаем поле перед новой записью? (Опционально) -- это нам не нужно=)
+                // Если хотите дописывать к существующему тексту, закомментируйте следующую строку:
+                //if (inputField.value.trim() === "") { 
+                   // Можно оставить пустым, если хотим заменять только при полной тишине
+                //}
+                
+                recognition.start();
+            }
+        }
+
+        voiceBtn.addEventListener('click', toggleListening);
+
+        // Начало записи
+        recognition.onstart = () => {
+            isListening = true;
+            voiceBtn.textContent = "🛑"; // Иконка стоп
+            voiceBtn.style.color = "red";
+            statusDiv.textContent = "Слушаю... говорите.";
+            
+            // Блокируем поле ввода во время записи, чтобы не мешать
+            inputField.placeholder = "Говорите...";
+        };
+
+        // Конец записи
+        recognition.onend = () => {
+            isListening = false;
+            voiceBtn.textContent = "🎤"; // Возвращаем микрофон
+            voiceBtn.style.color = ""; 
+            statusDiv.textContent = "";
+            inputField.placeholder = "Сообщение (или нажмите 🎤)...";
+            
+            // Фокус возвращается в поле для редактирования
+            inputField.focus();
+        };
+
+        // Получение результата
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            
+            // Вставляем текст в поле.  А ВОТ ЭТО НУЖНО! =))
+            // Если хотите добавлять к уже написанному, используйте: inputField.value += " " + transcript;
+            // Сейчас делаем замену, так как обычно диктуют одну мысль:
+            inputField.value += " " + transcript; 
+            
+            // Эмуляция события input (на случай, если у вас есть слушатели на изменение текста)
+            inputField.dispatchEvent(new Event('input'));
+            
+            console.log("Голосовой ввод:", transcript);
+        };
+
+        recognition.onerror = (event) => {
+            console.error("Ошибка голоса:", event.error);
+            let msg = "Ошибка: " + event.error;
+            if (event.error === 'not-allowed') msg = "Нет доступа к микрофону!";
+            statusDiv.textContent = msg;
+            isListening = false;
+            voiceBtn.textContent = "🎤";
+            voiceBtn.style.color = "";
+        };
+    } else {
+        console.warn("Web Speech API не поддерживается в этом браузере.");
+    }
+
+    // Дополнительная логика: синхронизация disabled состояния
+    // Если ваша функция login() снимает disabled с input и send-btn, 
+    // нам нужно также снять его с voice-btn.
+    
+    // Создаем наблюдатель за изменениями атрибута disabled у поля ввода
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'disabled') {
+                const isDisabled = inputField.disabled;
+                voiceBtn.disabled = isDisabled;
+                sendBtn.disabled = isDisabled;
+                
+                if (!isDisabled) {
+                    inputField.placeholder = "Сообщение (или нажмите 🎤)...";
+                }
+            }
+        });
+    });
+
+    observer.observe(inputField, { attributes: true });
+});
 </script>
 </body>
 </html>
