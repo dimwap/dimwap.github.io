@@ -6,7 +6,7 @@
     <style>
         body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 10px; }
         #box { height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background: #fff; }
-        .msg { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .msg { margin-bottom: 1px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .time { color: #999; font-size: 0.8em; }
         .err { color: red; font-size: 0.9em; }
 /* Для красоты */
@@ -83,7 +83,7 @@
             hash = str.charCodeAt(i) + ((hash << 5) - hash);
         }
         const h = Math.abs(hash) % 360; // Получаем тон в диапазоне [0, 360]
-        return `hsl(${h}, 70%, 85%)`;
+        return `hsl(${h}, 80%, 95%)`;
     }
     //require('dotenv').config();
     //const dbUser = process.env.apiKey;
