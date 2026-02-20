@@ -170,7 +170,7 @@
                 // Применяем цвет фона исходя из имени пользователя -- вызов функции
                 const userName = d.name || 'Anonymous';
                 const bgColor = stringToColor(userName);
-                div.className.backgroundColor = bgColor;
+                div.style.backgroundColor = bgColor;
                 const time = new Date(d.ts).toLocaleTimeString();
                 const date = new Date(d.ts).toLocaleDateString();
                 
