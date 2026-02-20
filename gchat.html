@@ -82,7 +82,7 @@
         for (let i = 0; i < str.length; i++) {
             hash = str.charCodeAt(i) + ((hash << 5) - hash);
         }
-        const h = Math.abs(hash) % 360; // Получаем тон в диапазоне [0, 360]
+        const h = (Math.abs(hash) % 36)*10; // Получаем тон в диапазоне [0, 360] ступеньками
         return `hsl(${h}, 80%, 95%)`;
     }
     //require('dotenv').config();
